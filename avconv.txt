@@ -1,0 +1,28 @@
+avconv -i "concat:00000.MTS|00001.MTS|00002.MTS" -c copy -f mpegts output
+
+avconv -i 00002.MTS -vf "scale=2*iw/3:2*ih/3" -r 25 -f mp4 -vb 5000k -acodec ac3 -ab 128k -y 00002output.mp4
+avconv -i 2013-03-06.mts -vf "scale=2*iw/3:2*ih/3" -r 25 -f avi -c:v mpeg4 -b:v 5000k -bf 2 -c:a ac3 -b:a 128k -y out.avi
+find 000*.MTS -exec avconv -i {} -vf "scale=2*iw/3:2*ih/3" -f avi -c:v mpeg4 -b:v 5000k -bf 2 -c:a ac3 -b:a 128k -y {}.avi \;
+
+You can transcode decrypted VOBs:
+	
+avconv -i snatch_1.vob -f avi -c:v mpeg4 -b:v 800k -g 300 -bf 2 -c:a libmp3lame -b:a 128k snatch.avi
+
+This is a typical DVD ripping example; the input is a VOB file, the output an AVI file with MPEG-4 video and MP3 audio. Note that in this command we use B-frames so the MPEG-4 stream is DivX5 compatible, and GOP size is 300 which means one intra frame every 10 seconds for 29.97fps input video. Furthermore, the audio stream is MP3-encoded so you need to enable LAME support by passing --enable-libmp3lame to configure. The mapping is particularly useful for DVD transcoding to get the desired audio language.
+
+NOTE: To see the supported input formats, use avconv -formats. 
+
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Я использую вот эту пару:
+avconv -i 2013-03-06.mts -vf "scale=2*iw/3:2*ih/3" -r 25 -f avi -c:v mpeg4 -b:v 5000k -bf 2 -c:a ac3 -b:a 128k -y out.avi
+find 000*.MTS -exec avconv -i {} -vf "scale=2*iw/3:2*ih/3" -f avi -c:v mpeg4 -b:v 5000k -bf 2 -c:a ac3 -b:a 128k -y {}.avi \;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+2013-05-13
+Нашёл набор параметров для более качественного кодирования:
+avconv -i "concat:00000.MTS|00001.MTS|00002.MTS" -c copy -f mpegts output
+find 000*.MTS -exec avconv -i {} -vf "scale=2*iw/3:2*ih/3" -f avi -r 50 -c:v h264 -c:v libx264 -c:a ac3 -b:a 128k -y {}.h264.50fps.avi \;
